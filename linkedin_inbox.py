@@ -294,7 +294,17 @@ async def scrape_profile(profile_name: str, reply_args: dict | None = None) -> d
                     # Scrape messages
                     conv_data["messages"] = await scrape_message_thread(page, conv_data["conversation_id"], account_name)
 
-                    log.info(f"[{profile_name}]  [{idx+1}] {conv_data['sender_name'][:35]} — {len(conv_data['messages'])} msgs | thread: {thread_id}")
+                    # Flag conversations where the last message is incoming (needs reply)
+                    if conv_data["messages"]:
+                        last_msg = conv_data["messages"][-1]
+                        conv_data["needs_reply"] = last_msg["direction"] == "incoming"
+                        conv_data["last_message_direction"] = last_msg["direction"]
+                    else:
+                        conv_data["needs_reply"] = False
+                        conv_data["last_message_direction"] = "unknown"
+
+                    status_icon = "⬅️  NEEDS REPLY" if conv_data["needs_reply"] else "➡️  sent"
+                    log.info(f"[{profile_name}]  [{idx+1}] {conv_data['sender_name'][:35]} — {len(conv_data['messages'])} msgs | {status_icon} | thread: {thread_id}")
 
                 except Exception as e:
                     log.warning(f"[{profile_name}]  [{idx+1}] ERROR processing conversation: {e}")
@@ -382,9 +392,27 @@ async def run(args):
                 log.info(f"Results written to {out_path}")
 
                 unread_count = sum(1 for c in result["conversations"] if c.get("unread"))
+                needs_reply_count = sum(1 for c in result["conversations"] if c.get("needs_reply"))
                 total = len(result["conversations"])
-                print(f"[{profile_name}] {result['account_name']} — {total} conversations scraped, {unread_count} unread")
-                print(f"Results written to {out_path}")
+                print(f"\n{'='*60}")
+                print(f"[{profile_name}] {result['account_name']}")
+                print(f"  {total} conversations | {unread_count} unread | {needs_reply_count} need reply")
+                print(f"  Output: {out_path}")
+
+                # Print conversations needing reply
+                need_reply = [c for c in result["conversations"] if c.get("needs_reply")]
+                if need_reply:
+                    print(f"\n  🔴 Threads needing reply:")
+                    for c in need_reply:
+                        last_msg = c["messages"][-1] if c["messages"] else None
+                        print(f"    • {c['sender_name']} ({c['timestamp']})")
+                        print(f"      Thread: {c['conversation_id']}")
+                        if last_msg:
+                            print(f"      Last msg: {last_msg['body'][:120]}")
+                        print()
+                else:
+                    print(f"\n  ✅ No threads need reply — all last messages are outgoing.")
+                print(f"{'='*60}")
         except Exception as e:
             log.error(f"Profile {profile_name} failed: {e}")
             status_map[profile_name] = "error"
