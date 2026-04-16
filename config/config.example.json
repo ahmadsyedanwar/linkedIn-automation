@@ -1,0 +1,9 @@
+{
+  "chrome_executable": "/snap/chromium/current/usr/lib/chromium-browser/chrome",
+  "chrome_user_data": "/home/YOUR_USER/snap/chromium/common/chromium",
+  "tmp_profile_base": "/tmp/linkedin_pw",
+  "output_dir": "/tmp",
+  "log_file": "/tmp/linkedin_inbox.log",
+  "conversations_to_fetch": 10,
+  "messages_per_conv": 5
+}
