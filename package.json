@@ -1,0 +1,27 @@
+{
+  "name": "linkedin-automation",
+  "version": "2.0.0",
+  "description": "LinkedIn multi-profile inbox, mention, and profile automation — with HTTP API server",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "inbox": "node --import ./register.js src/inbox.ts",
+    "profile": "node --import ./register.js src/profileScraper.ts",
+    "check": "node --import ./register.js src/inboxCheck.ts",
+    "mentions": "node --import ./register.js src/mentionChecker.ts",
+    "server": "node --import ./register.js src/server.ts",
+    "server:build": "node dist/server.js",
+    "inbox:build": "node dist/inbox.js",
+    "profile:build": "node dist/profileScraper.js",
+    "check:build": "node dist/inboxCheck.js",
+    "mentions:build": "node dist/mentionChecker.js"
+  },
+  "dependencies": {
+    "playwright": "^1.44.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.0"
+  }
+}
