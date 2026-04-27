@@ -17,6 +17,7 @@
     "mentions:build": "node dist/mentionChecker.js"
   },
   "dependencies": {
+    "dotenv": "^16.4.5",
     "playwright": "^1.44.0"
   },
   "devDependencies": {

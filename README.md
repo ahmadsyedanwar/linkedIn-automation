@@ -41,6 +41,8 @@ cp .env.example .env
 # edit .env — set PORT, LINKEDIN_API_TOKEN, LINKEDIN_WEBHOOK_URL
 ```
 
+On Windows or a non-snap Chrome install, set `LINKEDIN_CHROME_EXECUTABLE` and `LINKEDIN_CHROME_USER_DATA` in `.env` (see `.env.example`). When unset, defaults match the Linux snap paths in `src/config.ts`, and `LINKEDIN_OUTPUT_DIR` defaults to the system temp directory so JSON and logs are written somewhere Playwright can access on any OS.
+
 ### 3. Log in to LinkedIn in Chromium
 
 Open Chromium for each profile (`Default`, `Profile 1`, …) and log in to LinkedIn. The scraper reuses your existing sessions — no passwords stored.
@@ -248,14 +250,16 @@ Artifacts archived per run: all `/tmp/linkedin_inbox_*.json`, `/tmp/linkedin_men
 
 ## Output Files
 
+Default base directory is the OS temp folder (`/tmp` on most Linux, `%TEMP%` on Windows), overridable with `LINKEDIN_OUTPUT_DIR` in `.env`. Files below are relative to that base (except `output/…` for the check summary).
+
 | File | Written by | Description |
 |------|-----------|-------------|
-| `/tmp/linkedin_inbox_<Profile>_<ts>.json` | `inbox.ts` | Per-profile inbox scrape |
-| `/tmp/linkedin_mentions_<Profile>_<ts>.json` | `mentionChecker.ts` | Per-profile mentions |
-| `/tmp/linkedin_mentions_seen.json` | `mentionChecker.ts` | Seen mention IDs (state) |
-| `/tmp/linkedin_bio_<Name>_<ts>.json` | `profileScraper.ts` | Bio scrape result |
-| `/tmp/linkedin_status.json` | `inbox.ts` | Profile run status map |
-| `/tmp/linkedin_inbox.log` | All scripts | Combined log |
+| `linkedin_inbox_<Profile>_<ts>.json` | `inbox.ts` | Per-profile inbox scrape |
+| `linkedin_mentions_<Profile>_<ts>.json` | `mentionChecker.ts` | Per-profile mentions |
+| `linkedin_mentions_seen.json` | `mentionChecker.ts` | Seen mention IDs (state) |
+| `linkedin_bio_<Name>_<ts>.json` | `profileScraper.ts` | Bio scrape result |
+| `linkedin_status.json` | `inbox.ts` | Profile run status map |
+| `linkedin_inbox.log` | All scripts | Combined log |
 | `output/linkedin_inbox_check_latest.json` | `inboxCheck.ts` | Latest check summary |
 
 ### Inbox JSON
@@ -344,11 +348,23 @@ linkedin-automation/
 ├── src/
 │   ├── config.ts           # Constants (paths, limits)
 │   ├── types.ts            # All TypeScript interfaces
-│   ├── logger.ts           # File + stdout logger
-│   ├── inbox.ts            # Inbox scraper + reply tool
+│   ├── logger.ts           # App logger (backed by `logging/`)
+│   ├── logging/            # Log line format + file logger factory
+│   ├── httpServer/         # API: responses, auth, routes, webhooks, child runs
+│   ├── utils/
+│   │   └── linkedinSession.ts  # URL / session helpers
+│   ├── pageObjects/        # Page Object Model (Playwright) + AAA helper
+│   │   ├── LinkedInBasePage.ts
+│   │   ├── MessagingPage.ts
+│   │   ├── MentionsPage.ts
+│   │   ├── PublicProfilePage.ts
+│   │   ├── launchChromiumProfile.ts
+│   │   ├── aaa.ts
+│   │   └── index.ts
+│   ├── inbox.ts            # Inbox scraper + reply (orchestrates MessagingPage)
 │   ├── inboxCheck.ts       # Run inbox + analyze + report
-│   ├── profileScraper.ts   # Connection bio scraper
-│   ├── mentionChecker.ts   # @mention checker
+│   ├── profileScraper.ts   # Bio scraper (orchestrates PublicProfilePage)
+│   ├── mentionChecker.ts   # @mentions (orchestrates MentionsPage)
 │   └── server.ts           # HTTP API server (port 9000)
 ├── linkedin_inbox.py           # Legacy Python (kept for reference)
 ├── linkedin_profile_scraper.py # Legacy Python
