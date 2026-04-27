@@ -11,6 +11,7 @@ import { spawnSync } from "child_process";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { OUTPUT_DIR } from "./config.js";
 import type {
   InboxResult,
   NeedsReplyItem,
@@ -21,7 +22,7 @@ import type {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const INBOX_SCRIPT = path.resolve(__dirname, "inbox.ts");
-const TMP_GLOB_DIR = "/tmp";
+const TMP_GLOB_DIR = OUTPUT_DIR;
 const STATE_FILE = path.resolve(__dirname, "../output/linkedin_inbox_check_latest.json");
 
 function newestInboxFiles(): string[] {

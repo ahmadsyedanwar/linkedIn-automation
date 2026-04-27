@@ -133,6 +133,18 @@ export interface RunAllResult {
   checked_at: string;
 }
 
+// Shape of the JS evaluate result in mention card scraping (page objects)
+export interface RawMention {
+  cardIndex: string;
+  headlineText: string;
+  authorName: string;
+  authorProfileUrl: string;
+  postUrl: string;
+  commentPreview: string;
+  timeAgo: string;
+  isUnread: boolean;
+}
+
 // Shape of the JS evaluate result in scrape_message_thread
 export interface RawMessageEntry {
   idx: number;
